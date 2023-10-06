@@ -1,9 +1,5 @@
-import 'dart:io';
-import 'package:flutter_pdfview/flutter_pdfview.dart';
-import 'package:http/http.dart' as http;
-
 import 'package:flutter/material.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:pdfx/pdfx.dart';
 
 void main() {
   runApp(const MyApp());
@@ -33,24 +29,30 @@ class MyHomePage extends StatefulWidget {
 
 class MyHomePageState extends State<MyHomePage> {
   String pdfPath = '';
+  late final PdfController controller;
 
   @override
   void initState() {
     super.initState();
-    _downloadAndSavePdf();
+    controller = PdfController(
+      // viewportFraction: 1.0,
+      document: PdfDocument.openAsset('assets/pdf/pdf-sample.pdf'),
+    );
+
+    // _downloadAndSavePdf();
   }
 
-  Future<void> _downloadAndSavePdf() async {
-    final response = await http.get(Uri.parse(
-        'https://www.mhlw.go.jp/seisakunitsuite/bunya/koyou_roudou/roudoukijun/keiyaku/kaisei/dl/youshiki_01a.pdf'));
-    final pdfData = response.bodyBytes;
-    final directory = await getApplicationDocumentsDirectory();
-    final pdfFile = File('${directory.path}/sample.pdf');
-    await pdfFile.writeAsBytes(pdfData);
-    setState(() {
-      pdfPath = pdfFile.path;
-    });
-  }
+  // Future<void> _downloadAndSavePdf() async {
+  //   final response = await http.get(Uri.parse(
+  //       'https://www.mhlw.go.jp/seisakunitsuite/bunya/koyou_roudou/roudoukijun/keiyaku/kaisei/dl/youshiki_01a.pdf'));
+  //   final pdfData = response.bodyBytes;
+  //   final directory = await getApplicationDocumentsDirectory();
+  //   final pdfFile = File('${directory.path}/sample.pdf');
+  //   await pdfFile.writeAsBytes(pdfData);
+  //   setState(() {
+  //     pdfPath = pdfFile.path;
+  //   });
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -65,6 +67,7 @@ class MyHomePageState extends State<MyHomePage> {
             ElevatedButton(
               onPressed: () {
                 showModalBottomSheet<void>(
+                  backgroundColor: Colors.white,
                   context: context,
                   isScrollControlled: true,
                   builder: (BuildContext context) {
@@ -73,31 +76,35 @@ class MyHomePageState extends State<MyHomePage> {
                       decoration: const BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(10.0),
-                          topRight: Radius.circular(10.0),
+                          topLeft: Radius.circular(20.0),
+                          topRight: Radius.circular(20.0),
                         ),
                       ),
                       child: Column(
                         children: [
-                          ColoredBox(
-                            color: Colors.white,
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
                             child: Row(
                               children: [
                                 IconButton(
                                   onPressed: () => Navigator.pop(context),
                                   icon: const Icon(Icons.clear),
                                 ),
-                                const Text("労働通知書"),
+                                const Spacer(flex: 2),
+                                const Text(
+                                  "労働通知書",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const Spacer(flex: 3),
                               ],
                             ),
                           ),
                           Expanded(
-                            child: PDFView(
-                              filePath: pdfPath,
-                              autoSpacing: true,
-                              pageSnap: false,
-                              pageFling: false,
-                              fitEachPage: false,
+                            child: PdfView(
+                              controller: controller,
+                              scrollDirection: Axis.vertical,
                             ),
                           ),
                         ],
