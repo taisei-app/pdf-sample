@@ -105,6 +105,19 @@ class MyHomePageState extends State<MyHomePage> {
                             child: PdfView(
                               controller: controller,
                               scrollDirection: Axis.vertical,
+                              renderer: (PdfPage page) => page.render(
+                                width: page.width,
+                                height: page.height,
+                                format: PdfPageImageFormat.jpeg,
+                                backgroundColor: '#FFFFFF',
+                                forPrint: true,
+                                cropRect: Rect.fromLTWH(
+                                  0,
+                                  0,
+                                  page.width,
+                                  page.height,
+                                ),
+                              ),
                             ),
                           ),
                         ],
