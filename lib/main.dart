@@ -1,8 +1,13 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
-import 'package:pdfx/pdfx.dart';
+import 'package:flutter_pdfview/flutter_pdfview.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:pdf_sample/pdf_screen.dart';
+// import 'package:pdfx/pdfx.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(ProviderScope(child: const MyApp()));
 }
 
 class MyApp extends StatelessWidget {
@@ -15,7 +20,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const MyHomePage(),
+      home: PDFScreen(),
     );
   }
 }
@@ -29,15 +34,21 @@ class MyHomePage extends StatefulWidget {
 
 class MyHomePageState extends State<MyHomePage> {
   String pdfPath = '';
-  late final PdfController controller;
+  // late final PdfController controller;
+
+  final Completer<PDFViewController> _controller =
+      Completer<PDFViewController>();
+  int? pages = 0;
+  int? currentPage = 0;
+  bool isReady = false;
 
   @override
   void initState() {
     super.initState();
-    controller = PdfController(
-      // viewportFraction: 1.0,
-      document: PdfDocument.openAsset('assets/pdf/pdf-sample.pdf'),
-    );
+    // controller = PdfController(
+    // viewportFraction: 1.0,
+    //   document: PdfDocument.openAsset('assets/pdf/pdf-sample.pdf'),
+    // );
 
     // _downloadAndSavePdf();
   }
@@ -101,25 +112,52 @@ class MyHomePageState extends State<MyHomePage> {
                               ],
                             ),
                           ),
-                          Expanded(
-                            child: PdfView(
-                              controller: controller,
-                              scrollDirection: Axis.vertical,
-                              renderer: (PdfPage page) => page.render(
-                                width: page.width,
-                                height: page.height,
-                                format: PdfPageImageFormat.jpeg,
-                                backgroundColor: '#FFFFFF',
-                                forPrint: true,
-                                cropRect: Rect.fromLTWH(
-                                  0,
-                                  0,
-                                  page.width,
-                                  page.height,
-                                ),
-                              ),
-                            ),
+
+                          PDFView(
+                            filePath: 'assets/pdf/pdf-sample.pdf',
+                            enableSwipe: true,
+                            swipeHorizontal: true,
+                            autoSpacing: false,
+                            pageFling: false,
+                            onRender: (_pages) {
+                              // setState(() {
+                              //   pages = _pages;
+                              //   isReady = true;
+                              // });
+                            },
+                            onError: (error) {
+                              debugPrint(error.toString());
+                            },
+                            onPageError: (page, error) {
+                              debugPrint('$page: ${error.toString()}');
+                            },
+                            onViewCreated:
+                                (PDFViewController pdfViewController) {
+                              _controller.complete(pdfViewController);
+                            },
+                            onPageChanged: (int? page, int? total) {
+                              debugPrint('page change: $page/$total');
+                            },
                           ),
+                          // Expanded(
+                          //   child: PdfView(
+                          //     controller: controller,
+                          //     scrollDirection: Axis.vertical,
+                          //     renderer: (PdfPage page) => page.render(
+                          //       width: page.width,
+                          //       height: page.height,
+                          //       format: PdfPageImageFormat.jpeg,
+                          //       backgroundColor: '#FFFFFF',
+                          //       forPrint: true,
+                          //       cropRect: Rect.fromLTWH(
+                          //         0,
+                          //         0,
+                          //         page.width,
+                          //         page.height,
+                          //       ),
+                          //     ),
+                          //   ),
+                          // ),
                         ],
                       ),
                     );
